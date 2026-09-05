@@ -1180,7 +1180,7 @@ All requirements are initially `PENDING`. Status updates will be made as impleme
 | **CAD2SIM-REQ-002** | Unit | `tests/unit/math` | Numerical assertions for vector ops, dot/cross, norms, distances, projections, transformations | PENDING |
 | **CAD2SIM-REQ-003** | Unit | `tests/unit/geometry/test_primitives.cpp`, `tests/unit/geometry/test_advanced_primitives.cpp` | Point3, Line3, Plane3, Circle3, PlaneSurface3 and oriented Frame3; local/world conversion and round-trip tests; CTest 5/5 passed | VERIFIED |
 | **CAD2SIM-REQ-004** | Integration | `tests/integration/kernel/test_step_import.cpp`, `tests/fixtures/step/screw.step` | Representative STEP import, B-Rep validity validation, deterministic missing-file failure reporting; dedicated CTest passed; full CTest 6/6 passed | VERIFIED |
-| **CAD2SIM-REQ-005** | Integration | `tests/integration/topology` | Traversal and counts of solids, shells, faces, wires, edges, vertices | PENDING |
+| **CAD2SIM-REQ-005** | Integration | `tests/integration/topology/test_brep_topology.cpp`, `tests/fixtures/step/screw.step` | Traversal and counts of solids, shells, faces, wires, edges, vertices; dedicated CTest passed; full CTest 7/7 passed | VERIFIED |
 | **CAD2SIM-REQ-006** | Integration + Negative | `tests/integration/validation` | Valid vs. invalid geometry cases, deterministic diagnostic output | PENDING |
 | **CAD2SIM-REQ-007** | Unit + Integration | `tests/unit/geometry`, `tests/integration/properties` | Bounding boxes, normals, areas, lengths, volumes, centroids vs. analytical references | PENDING |
 | **CAD2SIM-REQ-008** | Integration | `tests/integration/features` | Classification of planar, cylindrical, holes, pockets, fillets, chamfers; false-positive checks | PENDING |

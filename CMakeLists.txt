@@ -142,3 +142,22 @@ add_test(
     NAME cad2sim_step_import_integration
     COMMAND cad2sim_step_import_integration
 )
+
+add_executable(cad2sim_brep_topology_integration
+    tests/integration/topology/test_brep_topology.cpp
+)
+
+target_link_libraries(cad2sim_brep_topology_integration
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_brep_topology_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_brep_topology_integration
+    COMMAND cad2sim_brep_topology_integration
+)
