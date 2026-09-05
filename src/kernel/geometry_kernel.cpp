@@ -2,11 +2,25 @@
 
 #include <filesystem>
 
+#include <Bnd_Box.hxx>
+#include <BRepAdaptor_Surface.hxx>
+#include <BRepBndLib.hxx>
 #include <BRepCheck_Analyzer.hxx>
+#include <BRepGProp.hxx>
+#include <BRepLProp_SLProps.hxx>
+#include <BRepTools.hxx>
+#include <GProp_GProps.hxx>
 #include <STEPControl_Reader.hxx>
 #include <TopAbs_ShapeEnum.hxx>
+#include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <gp_Dir.hxx>
+#include <gp_Pnt.hxx>
 
 namespace cad2sim::kernel {
 
@@ -69,25 +83,24 @@ ImportResult GeometryKernel::import_step(const std::string& path) const {
     };
 }
 
-}  // namespace cad2sim::kernel
-
-
-namespace cad2sim::kernel {
-
-TopologyCounts GeometryKernel::inspect_topology(const std::string& path) const {
+TopologyCounts GeometryKernel::inspect_topology(
+    const std::string& path
+) const {
     if (!std::filesystem::exists(path)) {
         return {0, 0, 0, 0, 0, 0};
     }
 
     STEPControl_Reader reader;
 
-    const IFSelect_ReturnStatus status = reader.ReadFile(path.c_str());
+    const IFSelect_ReturnStatus status =
+        reader.ReadFile(path.c_str());
 
     if (status != IFSelect_RetDone) {
         return {0, 0, 0, 0, 0, 0};
     }
 
-    const Standard_Integer transferred = reader.TransferRoots();
+    const Standard_Integer transferred =
+        reader.TransferRoots();
 
     if (transferred <= 0) {
         return {0, 0, 0, 0, 0, 0};
@@ -173,37 +186,259 @@ ValidationResult validate_shape(const TopoDS_Shape& shape) {
 
 namespace cad2sim::kernel {
 
-ValidationResult GeometryKernel::validate_step(const std::string& path) const {
+ValidationResult GeometryKernel::validate_step(
+    const std::string& path
+) const {
     if (!std::filesystem::exists(path)) {
         return {
             false,
-            "Geometry validation failed: STEP file does not exist: " + path
+            "Geometry validation failed: STEP file does not exist: " +
+            path
         };
     }
 
     STEPControl_Reader reader;
 
-    const IFSelect_ReturnStatus status = reader.ReadFile(path.c_str());
+    const IFSelect_ReturnStatus status =
+        reader.ReadFile(path.c_str());
 
     if (status != IFSelect_RetDone) {
         return {
             false,
-            "Geometry validation failed: failed to read STEP file: " + path
+            "Geometry validation failed: failed to read STEP file: " +
+            path
         };
     }
 
-    const Standard_Integer transferred = reader.TransferRoots();
+    const Standard_Integer transferred =
+        reader.TransferRoots();
 
     if (transferred <= 0) {
         return {
             false,
-            "Geometry validation failed: STEP file contains no transferable roots: " + path
+            "Geometry validation failed: STEP file contains no transferable roots: " +
+            path
         };
     }
 
     const TopoDS_Shape shape = reader.OneShape();
 
     return detail::validate_shape(shape);
+}
+
+GeometryProperties GeometryKernel::inspect_geometry_properties(
+    const std::string& path
+) const {
+    GeometryProperties properties{};
+
+    if (!std::filesystem::exists(path)) {
+        return properties;
+    }
+
+    STEPControl_Reader reader;
+
+    const IFSelect_ReturnStatus status =
+        reader.ReadFile(path.c_str());
+
+    if (status != IFSelect_RetDone) {
+        return properties;
+    }
+
+    const Standard_Integer transferred =
+        reader.TransferRoots();
+
+    if (transferred <= 0) {
+        return properties;
+    }
+
+    const TopoDS_Shape shape = reader.OneShape();
+
+    if (shape.IsNull()) {
+        return properties;
+    }
+
+    // Bounding box.
+    Bnd_Box box;
+    BRepBndLib::Add(shape, box);
+
+    if (!box.IsVoid()) {
+        Standard_Real min_x;
+        Standard_Real min_y;
+        Standard_Real min_z;
+        Standard_Real max_x;
+        Standard_Real max_y;
+        Standard_Real max_z;
+
+        box.Get(
+            min_x,
+            min_y,
+            min_z,
+            max_x,
+            max_y,
+            max_z
+        );
+
+        properties.bounding_box = {
+            min_x,
+            min_y,
+            min_z,
+            max_x,
+            max_y,
+            max_z
+        };
+    }
+
+    // Volume and centroid.
+    GProp_GProps volume_properties;
+    BRepGProp::VolumeProperties(
+        shape,
+        volume_properties
+    );
+
+    properties.volume = volume_properties.Mass();
+
+    const gp_Pnt volume_centroid =
+        volume_properties.CentreOfMass();
+
+    properties.centroid = {
+        volume_centroid.X(),
+        volume_centroid.Y(),
+        volume_centroid.Z()
+    };
+
+    // Unique faces.
+    TopTools_IndexedMapOfShape face_map;
+
+    TopExp::MapShapes(
+        shape,
+        TopAbs_FACE,
+        face_map
+    );
+
+    properties.faces.reserve(
+        static_cast<std::size_t>(face_map.Extent())
+    );
+
+    for (Standard_Integer index = 1;
+         index <= face_map.Extent();
+         ++index) {
+        const TopoDS_Face face =
+            TopoDS::Face(face_map(index));
+
+        GProp_GProps surface_properties;
+
+        BRepGProp::SurfaceProperties(
+            face,
+            surface_properties
+        );
+
+        const gp_Pnt face_centroid =
+            surface_properties.CentreOfMass();
+
+        FaceProperties face_properties{};
+
+        face_properties.index =
+            static_cast<std::size_t>(index - 1);
+
+        face_properties.area =
+            surface_properties.Mass();
+
+        face_properties.centroid = {
+            face_centroid.X(),
+            face_centroid.Y(),
+            face_centroid.Z()
+        };
+
+        // Compute a representative surface normal.
+        Standard_Real u_min;
+        Standard_Real u_max;
+        Standard_Real v_min;
+        Standard_Real v_max;
+
+        BRepTools::UVBounds(
+            face,
+            u_min,
+            u_max,
+            v_min,
+            v_max
+        );
+
+        const Standard_Real u =
+            (u_min + u_max) / 2.0;
+
+        const Standard_Real v =
+            (v_min + v_max) / 2.0;
+
+        BRepAdaptor_Surface surface(
+            face,
+            Standard_True
+        );
+
+        BRepLProp_SLProps local_properties(
+            surface,
+            u,
+            v,
+            1,
+            1.0e-7
+        );
+
+        if (local_properties.IsNormalDefined()) {
+            const gp_Dir normal =
+                local_properties.Normal();
+
+            double nx = normal.X();
+            double ny = normal.Y();
+            double nz = normal.Z();
+
+            if (face.Orientation() == TopAbs_REVERSED) {
+                nx = -nx;
+                ny = -ny;
+                nz = -nz;
+            }
+
+            face_properties.normal = {
+                nx,
+                ny,
+                nz
+            };
+        }
+
+        properties.faces.push_back(face_properties);
+    }
+
+    // Unique edges.
+    TopTools_IndexedMapOfShape edge_map;
+
+    TopExp::MapShapes(
+        shape,
+        TopAbs_EDGE,
+        edge_map
+    );
+
+    properties.edges.reserve(
+        static_cast<std::size_t>(edge_map.Extent())
+    );
+
+    for (Standard_Integer index = 1;
+         index <= edge_map.Extent();
+         ++index) {
+        const TopoDS_Edge edge =
+            TopoDS::Edge(edge_map(index));
+
+        GProp_GProps edge_properties;
+
+        BRepGProp::LinearProperties(
+            edge,
+            edge_properties
+        );
+
+        properties.edges.push_back({
+            static_cast<std::size_t>(index - 1),
+            edge_properties.Mass()
+        });
+    }
+
+    return properties;
 }
 
 }  // namespace cad2sim::kernel

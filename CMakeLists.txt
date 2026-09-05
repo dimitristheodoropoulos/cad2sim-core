@@ -185,3 +185,22 @@ add_test(
     NAME cad2sim_geometry_validation_integration
     COMMAND cad2sim_geometry_validation_integration
 )
+
+add_executable(cad2sim_geometry_properties_integration
+    tests/integration/properties/test_geometry_properties.cpp
+)
+
+target_link_libraries(cad2sim_geometry_properties_integration
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_geometry_properties_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_geometry_properties_integration
+    COMMAND cad2sim_geometry_properties_integration
+)
