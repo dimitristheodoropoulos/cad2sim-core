@@ -24,6 +24,7 @@ add_library(cad2sim_core
     src/vec3.cpp
     src/transform3.cpp
     src/kernel/geometry_kernel.cpp
+    src/features/feature_recognition.cpp
 )
 
 target_include_directories(cad2sim_core
@@ -203,4 +204,23 @@ target_compile_definitions(cad2sim_geometry_properties_integration
 add_test(
     NAME cad2sim_geometry_properties_integration
     COMMAND cad2sim_geometry_properties_integration
+)
+
+add_executable(cad2sim_feature_recognition_integration
+    tests/integration/features/test_feature_recognition.cpp
+)
+
+target_link_libraries(cad2sim_feature_recognition_integration
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_feature_recognition_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_feature_recognition_integration
+    COMMAND cad2sim_feature_recognition_integration
 )
