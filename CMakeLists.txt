@@ -161,3 +161,27 @@ add_test(
     NAME cad2sim_brep_topology_integration
     COMMAND cad2sim_brep_topology_integration
 )
+
+add_executable(cad2sim_geometry_validation_integration
+    tests/integration/validation/test_geometry_validation.cpp
+)
+
+target_link_libraries(cad2sim_geometry_validation_integration
+    PRIVATE
+        cad2sim_core
+)
+
+target_include_directories(cad2sim_geometry_validation_integration
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/kernel
+)
+
+target_compile_definitions(cad2sim_geometry_validation_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_geometry_validation_integration
+    COMMAND cad2sim_geometry_validation_integration
+)

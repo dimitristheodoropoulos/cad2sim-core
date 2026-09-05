@@ -141,3 +141,69 @@ TopologyCounts GeometryKernel::inspect_topology(const std::string& path) const {
 }
 
 }  // namespace cad2sim::kernel
+
+#include "geometry_validation.hpp"
+
+namespace cad2sim::kernel::detail {
+
+ValidationResult validate_shape(const TopoDS_Shape& shape) {
+    if (shape.IsNull()) {
+        return {
+            false,
+            "Geometry validation failed: shape is null"
+        };
+    }
+
+    const BRepCheck_Analyzer analyzer(shape);
+
+    if (!analyzer.IsValid()) {
+        return {
+            false,
+            "Geometry validation failed: B-Rep shape is invalid"
+        };
+    }
+
+    return {
+        true,
+        {}
+    };
+}
+
+}  // namespace cad2sim::kernel::detail
+
+namespace cad2sim::kernel {
+
+ValidationResult GeometryKernel::validate_step(const std::string& path) const {
+    if (!std::filesystem::exists(path)) {
+        return {
+            false,
+            "Geometry validation failed: STEP file does not exist: " + path
+        };
+    }
+
+    STEPControl_Reader reader;
+
+    const IFSelect_ReturnStatus status = reader.ReadFile(path.c_str());
+
+    if (status != IFSelect_RetDone) {
+        return {
+            false,
+            "Geometry validation failed: failed to read STEP file: " + path
+        };
+    }
+
+    const Standard_Integer transferred = reader.TransferRoots();
+
+    if (transferred <= 0) {
+        return {
+            false,
+            "Geometry validation failed: STEP file contains no transferable roots: " + path
+        };
+    }
+
+    const TopoDS_Shape shape = reader.OneShape();
+
+    return detail::validate_shape(shape);
+}
+
+}  // namespace cad2sim::kernel

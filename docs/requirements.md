@@ -525,7 +525,7 @@ No source file, test, or verification result shall be listed until it actually e
 | `CAD2SIM-REQ-003` | `include/cad2sim/geometry/primitives.hpp` | `tests/unit/geometry/test_primitives.cpp`, `tests/unit/geometry/test_advanced_primitives.cpp` | Point3, Line3, Plane3, Circle3, PlaneSurface3 and oriented Frame3 | CTest: 5/5 passed, 0 failed | `VERIFIED` |
 | `CAD2SIM-REQ-004` | `include/cad2sim/kernel/geometry_kernel.hpp` | `src/kernel/geometry_kernel.cpp` | `tests/integration/kernel/test_step_import.cpp` | Representative STEP import and B-Rep validity; deterministic missing-file failure; CTest: `cad2sim_step_import_integration` passed; full CTest: 6/6 passed | `VERIFIED` |
 | `CAD2SIM-REQ-005` | `include/cad2sim/kernel/geometry_kernel.hpp` | `src/kernel/geometry_kernel.cpp` | `tests/integration/topology/test_brep_topology.cpp` | B-Rep traversal of solids, shells, faces, wires, edges, vertices; dedicated CTest passed; full CTest: 7/7 passed | `VERIFIED` |
-| `CAD2SIM-REQ-006` | TBD | TBD | TBD | TBD | `PENDING` |
+| `CAD2SIM-REQ-006` | `include/cad2sim/kernel/geometry_kernel.hpp` | `src/kernel/geometry_kernel.cpp`, `src/kernel/geometry_validation.hpp` | Valid STEP geometry validation; intentionally invalid B-Rep validation; deterministic diagnostic output; dedicated CTest passed; full CTest: 8/8 passed | `VERIFIED` |
 | `CAD2SIM-REQ-007` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-008` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-009` | TBD | TBD | TBD | TBD | `PENDING` |

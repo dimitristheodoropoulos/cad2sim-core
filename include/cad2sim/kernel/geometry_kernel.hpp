@@ -20,10 +20,16 @@ struct TopologyCounts {
     std::size_t vertices;
 };
 
+struct ValidationResult {
+    bool valid;
+    std::string diagnostic;
+};
+
 class GeometryKernel {
 public:
     ImportResult import_step(const std::string& path) const;
     TopologyCounts inspect_topology(const std::string& path) const;
+    ValidationResult validate_step(const std::string& path) const;
 };
 
 }  // namespace cad2sim::kernel
