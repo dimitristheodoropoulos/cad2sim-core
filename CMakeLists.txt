@@ -5,6 +5,16 @@ project(CAD2SimCore
     LANGUAGES CXX
 )
 
+find_package(OpenCASCADE REQUIRED
+    COMPONENTS
+        FoundationClasses
+        ModelingData
+        ModelingAlgorithms
+        Visualization
+        ApplicationFramework
+        DataExchange
+)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -13,11 +23,33 @@ add_library(cad2sim_core
     src/core.cpp
     src/vec3.cpp
     src/transform3.cpp
+    src/kernel/geometry_kernel.cpp
 )
 
 target_include_directories(cad2sim_core
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${OpenCASCADE_INCLUDE_DIR}
+)
+
+target_link_libraries(cad2sim_core
+    PUBLIC
+        TKernel
+        TKMath
+        TKG2d
+        TKG3d
+        TKGeomBase
+        TKBRep
+        TKGeomAlgo
+        TKTopAlgo
+        TKPrim
+        TKBO
+        TKShHealing
+        TKBool
+        TKSTEPBase
+        TKSTEPAttr
+        TKSTEP209
+        TKSTEP
 )
 
 add_executable(cad2sim_core_unit
@@ -90,4 +122,23 @@ target_link_libraries(cad2sim_advanced_primitives_unit
 add_test(
     NAME cad2sim_advanced_primitives_unit
     COMMAND cad2sim_advanced_primitives_unit
+)
+
+add_executable(cad2sim_step_import_integration
+    tests/integration/kernel/test_step_import.cpp
+)
+
+target_link_libraries(cad2sim_step_import_integration
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_step_import_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_step_import_integration
+    COMMAND cad2sim_step_import_integration
 )
