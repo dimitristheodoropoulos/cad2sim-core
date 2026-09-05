@@ -22,6 +22,8 @@
 #include <gp_Dir.hxx>
 #include <gp_Pnt.hxx>
 
+#include <GeomAbs_SurfaceType.hxx>
+
 namespace cad2sim::kernel {
 
 ImportResult GeometryKernel::import_step(const std::string& path) const {
@@ -439,6 +441,75 @@ GeometryProperties GeometryKernel::inspect_geometry_properties(
     }
 
     return properties;
+}
+
+std::vector<FaceDescriptor> GeometryKernel::inspect_faces(
+    const std::string& path
+) const {
+    std::vector<FaceDescriptor> descriptors;
+
+    if (!std::filesystem::exists(path)) {
+        return descriptors;
+    }
+
+    STEPControl_Reader reader;
+    if (reader.ReadFile(path.c_str()) != IFSelect_RetDone) {
+        return descriptors;
+    }
+
+    if (reader.TransferRoots() <= 0) {
+        return descriptors;
+    }
+
+    const TopoDS_Shape shape = reader.OneShape();
+    if (shape.IsNull()) {
+        return descriptors;
+    }
+
+    // Get unique faces using indexed map
+    TopTools_IndexedMapOfShape face_map;
+    TopExp::MapShapes(shape, TopAbs_FACE, face_map);
+
+    descriptors.reserve(static_cast<std::size_t>(face_map.Extent()));
+
+    for (Standard_Integer i = 1; i <= face_map.Extent(); ++i) {
+        const TopoDS_Face face = TopoDS::Face(face_map(i));
+
+        // Compute area and skip degenerate faces
+        GProp_GProps surface_props;
+        BRepGProp::SurfaceProperties(face, surface_props);
+        const double area = surface_props.Mass();
+
+        if (area < 1e-12) {
+            continue;
+        }
+
+        // Classify surface type
+        BRepAdaptor_Surface adaptor(face, Standard_True);
+        SurfaceType type = SurfaceType::Unknown;
+
+        switch (adaptor.GetType()) {
+            case GeomAbs_Plane:
+                type = SurfaceType::Plane;
+                break;
+            case GeomAbs_Cylinder:
+                type = SurfaceType::Cylinder;
+                break;
+            default:
+                break;
+        }
+
+        const gp_Pnt centroid = surface_props.CentreOfMass();
+
+        descriptors.push_back({
+            descriptors.size(),
+            type,
+            area,
+            {centroid.X(), centroid.Y(), centroid.Z()}
+        });
+    }
+
+    return descriptors;
 }
 
 }  // namespace cad2sim::kernel

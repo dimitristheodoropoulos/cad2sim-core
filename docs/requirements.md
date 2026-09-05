@@ -529,7 +529,7 @@ No source file, test, or verification result shall be listed until it actually e
 | `CAD2SIM-REQ-007` | `include/cad2sim/kernel/geometry_kernel.hpp` | `src/kernel/geometry_kernel.cpp` | Analytical 10x20x30 box and representative STEP property extraction covering bounding boxes, surface normals, areas, edge lengths, volume, and centroids; dedicated CTest passed; full CTest: 9/9 passed | `VERIFIED` |
 | `CAD2SIM-REQ-008` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-009` | TBD | TBD | TBD | TBD | `PENDING` |
-| `CAD2SIM-REQ-010` | TBD | TBD | TBD | TBD | `PENDING` |
+| `CAD2SIM-REQ-010` | `include/cad2sim/kernel/geometry_kernel.hpp` | `src/kernel/geometry_kernel.cpp`, `src/features/feature_recognition.cpp` | `tests/integration/features/test_feature_recognition.cpp` | Dependency-boundary audit: no OCCT references in public CAD2Sim headers or feature-recognition sources; OCCT dependencies of `cad2sim_core` are CMake `PRIVATE`; clean build passed; full CTest: 10/10 passed, 0 failed | `VERIFIED` |
 | `CAD2SIM-REQ-011` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-012` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-013` | TBD | TBD | TBD | TBD | `PENDING` |

@@ -73,12 +73,30 @@ struct GeometryProperties {
     std::vector<EdgeProperties> edges;
 };
 
+enum class SurfaceType {
+    Unknown,
+    Plane,
+    Cylinder
+};
+
+struct FaceDescriptor {
+    // Zero-based index within the current face inspection result.
+    std::size_t index;
+    SurfaceType surface_type;
+    double area;
+    Point3 centroid;
+};
+
 class GeometryKernel {
 public:
     ImportResult import_step(const std::string& path) const;
     TopologyCounts inspect_topology(const std::string& path) const;
     ValidationResult validate_step(const std::string& path) const;
     GeometryProperties inspect_geometry_properties(
+        const std::string& path
+    ) const;
+
+    std::vector<FaceDescriptor> inspect_faces(
         const std::string& path
     ) const;
 };

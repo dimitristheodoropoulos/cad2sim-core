@@ -142,7 +142,9 @@ Initial target features include:
 * fillets
 * chamfers
 
-Feature recognition shall operate through geometry abstractions rather than directly coupling higher-level application code to a specific CAD kernel.
+Feature recognition shall operate through project-defined geometry-kernel APIs rather than directly coupling higher-level application code to a specific CAD kernel.
+
+The current implementation consumes face descriptors exposed by `GeometryKernel`. The feature-recognition source does not include or depend directly on OpenCASCADE types.
 
 Ambiguous or unsupported features shall be explicitly reported.
 
@@ -202,28 +204,29 @@ The geometry-kernel layer isolates external CAD-kernel dependencies.
 
 The initial implementation is intended to use OpenCASCADE Technology.
 
-The application-facing architecture shall expose a project-defined abstraction rather than requiring higher-level components to depend directly on OpenCASCADE classes.
+The application-facing architecture exposes a project-defined abstraction rather than requiring higher-level components to depend directly on OpenCASCADE classes.
 
-Conceptually:
+The current implementation boundary is:
 
 ```text
-                 ┌─────────────────────┐
-                 │ Geometry Kernel API  │
-                 │ (CAD2Sim-Core)      │
-                 └──────────┬──────────┘
-                            │
-                  ┌─────────┴─────────┐
-                  │                   │
-                  ▼                   ▼
-          ┌───────────────┐   ┌────────────────┐
-          │ OCC Adapter   │   │ Future Adapter │
-          │               │   │                │
-          │ OpenCASCADE   │   │ Commercial     │
-          │               │   │ kernel         │
-          └───────────────┘   └────────────────┘
+Feature Recognition
+        │
+        │ CAD2Sim project API
+        ▼
+GeometryKernel
+        │
+        │ OpenCASCADE implementation
+        ▼
+OpenCASCADE
 ```
 
-A future commercial-kernel adapter may be introduced if licensing and technical requirements permit.
+`GeometryKernel` currently exposes project-defined descriptors for the geometry information required by higher-level feature recognition. OpenCASCADE-specific types remain confined to the kernel implementation.
+
+The build system also keeps the OpenCASCADE include directory and libraries private to `cad2sim_core`. Integration tests that intentionally construct or inspect OpenCASCADE geometry declare their OpenCASCADE dependency explicitly.
+
+The architecture therefore provides a defined boundary at which a future alternative kernel implementation could be introduced without requiring higher-level feature-recognition code to depend directly on that kernel.
+
+No alternative commercial-kernel adapter is currently implemented or claimed.
 
 This architecture does not constitute professional experience with ACIS or Parasolid.
 
@@ -262,6 +265,8 @@ Project-defined interfaces
 External technology adapters
 ```
 
+The current implementation follows this rule for feature recognition and the geometry-kernel boundary: higher-level feature-recognition code consumes the project-defined `GeometryKernel` API, while OpenCASCADE-specific implementation details remain within the kernel layer.
+
 External library types shall not unnecessarily propagate through the entire application.
 
 ---
@@ -284,7 +289,7 @@ Higher-level components should depend on concepts such as:
 
 rather than directly depending on vendor-specific classes.
 
-The exact interfaces shall be refined during implementation.
+The current implemented boundary includes project-defined `GeometryKernel`, `SurfaceType`, and `FaceDescriptor` interfaces for the geometry information required by feature recognition. Additional interfaces may be refined as further preprocessing capabilities are implemented.
 
 The objective is not to create a complete replacement for a commercial CAD kernel. The objective is to prevent vendor-specific implementation details from becoming inseparable from the preprocessing application.
 
@@ -568,8 +573,8 @@ The following logical components are established as the initial design baseline:
 | `math`        | 3D mathematical primitives              | None preferred                  |
 | `geometry`    | Geometric abstractions and properties   | Through kernel interfaces       |
 | `topology`    | B-Rep traversal and relationships       | Through kernel interfaces       |
-| `kernel`      | Geometry-kernel interfaces and adapters | OpenCASCADE                     |
-| `features`    | Feature recognition                     | Project geometry/topology APIs  |
+| `kernel`      | Geometry-kernel interfaces and adapters | OpenCASCADE implementation      |
+| `features`    | Feature recognition                     | Project-defined GeometryKernel API |
 | `meshing`     | Mesh generation and analysis            | Meshing library through adapter |
 | `engineering` | Engineering model representation        | None preferred                  |
 | `application` | Pipeline orchestration                  | Project interfaces              |
@@ -594,7 +599,7 @@ The initial architecture addresses the requirements as follows:
 | `CAD2SIM-REQ-007` | Geometry Analysis Layer                                         |
 | `CAD2SIM-REQ-008` | Feature Recognition Layer                                       |
 | `CAD2SIM-REQ-009` | 3D Mathematics Foundation + transformations                     |
-| `CAD2SIM-REQ-010` | Geometry Kernel Boundary                                        |
+| `CAD2SIM-REQ-010` | Implemented Geometry Kernel Boundary; OCCT-specific functionality isolated behind the project-defined `GeometryKernel` API |
 | `CAD2SIM-REQ-011` | Meshing Architecture                                            |
 | `CAD2SIM-REQ-012` | Mesh Quality Analyzer                                           |
 | `CAD2SIM-REQ-013` | Engineering Model Generation                                    |
@@ -622,10 +627,21 @@ This table represents architectural intent only. It does not establish implement
 
 ## 18. Current Status
 
-Architecture baseline defined.
+The architecture baseline remains the governing design reference for the project.
 
-Implementation has not yet started.
+The initial geometry-kernel implementation is now in place and verified at the current scope. The implemented boundary includes:
 
-External CAD and meshing dependencies have not yet been selected, installed, or integrated.
+* project-defined `GeometryKernel` API
+* project-defined face descriptors and surface classification
+* OpenCASCADE-specific implementation confined to the kernel layer
+* feature recognition consuming the project-defined kernel API rather than OpenCASCADE types directly
+* CMake visibility configured so OpenCASCADE dependencies are private to `cad2sim_core`
+* explicit OpenCASCADE dependencies for integration tests that intentionally use kernel-native geometry
 
-No architecture component shall be marked implemented until source code and corresponding verification evidence exist.
+Verification of the current implementation includes a clean configure/build and full CTest execution with 10/10 tests passing and 0 failures.
+
+The current implementation does not include an alternative commercial-kernel adapter, and no ACIS or Parasolid support is claimed.
+
+Meshing, richer feature recognition, engineering-model generation, and other future architecture components remain implementation work for later phases.
+
+Architecture components shall only be considered implemented at the specific scope for which corresponding source code and verification evidence exist.

@@ -30,11 +30,12 @@ add_library(cad2sim_core
 target_include_directories(cad2sim_core
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
         ${OpenCASCADE_INCLUDE_DIR}
 )
 
 target_link_libraries(cad2sim_core
-    PUBLIC
+    PRIVATE
         TKernel
         TKMath
         TKG2d
@@ -167,14 +168,32 @@ add_executable(cad2sim_geometry_validation_integration
     tests/integration/validation/test_geometry_validation.cpp
 )
 
-target_link_libraries(cad2sim_geometry_validation_integration
-    PRIVATE
-        cad2sim_core
-)
-
+# --- Phase 3 CMake change: explicit OpenCASCADE for this test ---
 target_include_directories(cad2sim_geometry_validation_integration
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/kernel
+        ${OpenCASCADE_INCLUDE_DIR}
+)
+
+target_link_libraries(cad2sim_geometry_validation_integration
+    PRIVATE
+        cad2sim_core
+        TKernel
+        TKMath
+        TKG2d
+        TKG3d
+        TKGeomBase
+        TKBRep
+        TKGeomAlgo
+        TKTopAlgo
+        TKPrim
+        TKBO
+        TKShHealing
+        TKBool
+        TKSTEPBase
+        TKSTEPAttr
+        TKSTEP209
+        TKSTEP
 )
 
 target_compile_definitions(cad2sim_geometry_validation_integration
@@ -191,9 +210,31 @@ add_executable(cad2sim_geometry_properties_integration
     tests/integration/properties/test_geometry_properties.cpp
 )
 
+# --- Phase 3 CMake change: explicit OpenCASCADE for this test ---
+target_include_directories(cad2sim_geometry_properties_integration
+    PRIVATE
+        ${OpenCASCADE_INCLUDE_DIR}
+)
+
 target_link_libraries(cad2sim_geometry_properties_integration
     PRIVATE
         cad2sim_core
+        TKernel
+        TKMath
+        TKG2d
+        TKG3d
+        TKGeomBase
+        TKBRep
+        TKGeomAlgo
+        TKTopAlgo
+        TKPrim
+        TKBO
+        TKShHealing
+        TKBool
+        TKSTEPBase
+        TKSTEPAttr
+        TKSTEP209
+        TKSTEP
 )
 
 target_compile_definitions(cad2sim_geometry_properties_integration
