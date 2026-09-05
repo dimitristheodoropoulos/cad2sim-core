@@ -522,7 +522,7 @@ No source file, test, or verification result shall be listed until it actually e
 |---|---|---|---|---|---|
 | `CAD2SIM-REQ-001` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-002` | TBD | TBD | TBD | TBD | `PENDING` |
-| `CAD2SIM-REQ-003` | TBD | TBD | TBD | TBD | `PENDING` |
+| `CAD2SIM-REQ-003` | `include/cad2sim/geometry/primitives.hpp` | `tests/unit/geometry/test_primitives.cpp`, `tests/unit/geometry/test_advanced_primitives.cpp` | Point3, Line3, Plane3, Circle3, PlaneSurface3 and oriented Frame3 | CTest: 5/5 passed, 0 failed | `VERIFIED` |
 | `CAD2SIM-REQ-004` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-005` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-REQ-006` | TBD | TBD | TBD | TBD | `PENDING` |
