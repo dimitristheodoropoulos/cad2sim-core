@@ -8,7 +8,7 @@ The purpose is to establish how the project shall demonstrate that its mathemati
 
 Verification shall be based on executable tests and measurable evidence rather than documentation claims or visual inspection alone.
 
-This document is a verification design baseline. No verification result is claimed at this stage.
+This document defines the verification strategy and records verification evidence as individual requirements are implemented and verified. Verification status is maintained in the requirements-to-evidence matrix below.
 
 ---
 
@@ -1213,7 +1213,7 @@ All requirements are initially `PENDING`. Status updates will be made as impleme
 | **CAD2SIM-REQ-013** | Integration | `tests/integration/engineering/test_region_identification.cpp`, `tests/fixtures/step/screw.step` | Controlled STEP geometry is converted into face-based engineering regions with references to originating face positions within the validated model representation; repeated identification on the same validated shape produces identical region indices and source references; invalid validated-shape input is rejected with a diagnostic; focused integration test passed; full CTest: 14/14 passed, 0 failed | VERIFIED |
 | **CAD2SIM-REQ-014** | Unit | `tests/unit/engineering/test_engineering_model.cpp`, `tests/unit/engineering/test_engineering_model_serializer.cpp` | Engineering model schema validation covers region layout and references for materials, analysis entities and boundary-condition-ready references, plus metadata key validation; serializer emits a versioned project-defined representation with deterministic section ordering; deserializer rejects malformed records, missing required sections/records, unsupported versions, invalid references and trailing data; serialize/deserialize/serialize round-trip preserves the serialized representation exactly; focused unit tests passed; full CTest: 16/16 passed, 0 failed | VERIFIED |
 | **CAD2SIM-REQ-015** | Regression | `tests/regression/determinism/test_preprocessing_determinism.cpp`, `tests/fixtures/step/screw.step` | Two executions with identical STEP input and explicit meshing parameters are compared across validation, surface mesh structure/data, mesh quality, engineering regions, engineering-model validation, and serialized engineering-model output; focused determinism regression passed; full CTest: 17/17 passed, 0 failed | VERIFIED |
-| **CAD2SIM-REQ-016** | Negative Unit/Integration | `tests/unit/validation`, `tests/integration/negative` | Tests with unsupported geometry, invalid CAD, mesh failure; error reporting assertions | PENDING |
+| **CAD2SIM-REQ-016** | Negative Integration | `tests/integration/negative/test_error_handling.cpp` | Negative coverage verifies missing STEP input, malformed STEP input, invalid B-Rep geometry, invalid linear/angular meshing parameters, invalid validated-shape input, and invalid engineering-model references; stable project-defined diagnostics are asserted explicitly, while malformed STEP requires failure with a non-empty diagnostic; focused REQ-016 test passed; full CTest: 18/18 passed, 0 failed | VERIFIED |
 | **CAD2SIM-REQ-017** | CI + Regression | Entire test suite | Automated test execution, reproducible results, documented test logs | PENDING |
 | **CAD2SIM-REQ-018** | Regression | `tests/regression` | Suite of primitives, topology variations, features, invalid cases, meshing, metadata | PENDING |
 | **CAD2SIM-REQ-019** | Benchmark | `benchmarks/` | Timings, memory usage on representative models; documented methodology | PENDING |

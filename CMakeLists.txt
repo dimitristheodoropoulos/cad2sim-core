@@ -215,6 +215,47 @@ add_test(
     COMMAND cad2sim_geometry_validation_integration
 )
 
+add_executable(cad2sim_negative_error_handling_integration
+    tests/integration/negative/test_error_handling.cpp
+)
+
+target_include_directories(cad2sim_negative_error_handling_integration
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/kernel
+        ${OpenCASCADE_INCLUDE_DIR}
+)
+
+target_link_libraries(cad2sim_negative_error_handling_integration
+    PRIVATE
+        cad2sim_core
+        TKernel
+        TKMath
+        TKG2d
+        TKG3d
+        TKGeomBase
+        TKBRep
+        TKGeomAlgo
+        TKTopAlgo
+        TKPrim
+        TKBO
+        TKShHealing
+        TKBool
+        TKSTEPBase
+        TKSTEPAttr
+        TKSTEP209
+        TKSTEP
+)
+
+target_compile_definitions(cad2sim_negative_error_handling_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_negative_error_handling_integration
+    COMMAND cad2sim_negative_error_handling_integration
+)
+
 add_executable(cad2sim_geometry_properties_integration
     tests/integration/properties/test_geometry_properties.cpp
 )
