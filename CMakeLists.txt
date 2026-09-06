@@ -374,3 +374,23 @@ add_test(
     NAME cad2sim_region_identification_integration
     COMMAND cad2sim_region_identification_integration
 )
+
+
+add_executable(cad2sim_determinism_regression
+    tests/regression/determinism/test_preprocessing_determinism.cpp
+)
+
+target_link_libraries(cad2sim_determinism_regression
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_determinism_regression
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_determinism_regression
+    COMMAND cad2sim_determinism_regression
+)
