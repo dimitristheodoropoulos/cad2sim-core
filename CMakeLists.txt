@@ -29,6 +29,7 @@ add_library(cad2sim_core
     src/kernel/detail/validated_shape_data.cpp
     src/kernel/detail/step_shape_loader.cpp
     src/mesh/surface_mesher.cpp
+    src/mesh/mesh_quality.cpp
 )
 
 target_include_directories(cad2sim_core
@@ -289,4 +290,37 @@ target_compile_definitions(cad2sim_surface_mesh_integration
 add_test(
     NAME cad2sim_surface_mesh_integration
     COMMAND cad2sim_surface_mesh_integration
+)
+
+add_executable(cad2sim_mesh_quality_unit
+    tests/unit/mesh/test_mesh_quality.cpp
+)
+
+target_link_libraries(cad2sim_mesh_quality_unit
+    PRIVATE
+        cad2sim_core
+)
+
+add_test(
+    NAME cad2sim_mesh_quality_unit
+    COMMAND cad2sim_mesh_quality_unit
+)
+
+add_executable(cad2sim_mesh_quality_integration
+    tests/integration/mesh/test_mesh_quality.cpp
+)
+
+target_link_libraries(cad2sim_mesh_quality_integration
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_mesh_quality_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_mesh_quality_integration
+    COMMAND cad2sim_mesh_quality_integration
 )
