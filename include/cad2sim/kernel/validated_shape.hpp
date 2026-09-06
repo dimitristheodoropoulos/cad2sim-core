@@ -6,6 +6,10 @@ namespace cad2sim::mesh {
 class SurfaceMesher;
 }
 
+namespace cad2sim::engineering {
+class RegionIdentifier;
+}
+
 namespace cad2sim::kernel {
 
 namespace detail {
@@ -28,6 +32,7 @@ private:
     std::shared_ptr<const detail::ValidatedShapeData> data_;
 
     friend class cad2sim::mesh::SurfaceMesher;
+    friend class cad2sim::engineering::RegionIdentifier;
     friend class GeometryKernel;
 };
 
