@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include <Bnd_Box.hxx>
+#include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepCheck_Analyzer.hxx>
@@ -18,10 +19,15 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+#include <gp_Ax1.hxx>
+#include <gp_Cylinder.hxx>
 #include <gp_Dir.hxx>
+#include <gp_Pln.hxx>
 #include <gp_Pnt.hxx>
 
+#include <GeomAbs_CurveType.hxx>
 #include <GeomAbs_SurfaceType.hxx>
 
 namespace cad2sim::kernel {
@@ -510,6 +516,275 @@ std::vector<FaceDescriptor> GeometryKernel::inspect_faces(
     }
 
     return descriptors;
+}
+
+
+namespace {
+
+CurveType classify_curve(const TopoDS_Edge& edge)
+{
+    BRepAdaptor_Curve adaptor(edge);
+
+    switch (adaptor.GetType()) {
+        case GeomAbs_Line:
+            return CurveType::Line;
+        case GeomAbs_Circle:
+            return CurveType::Circle;
+        default:
+            return CurveType::Other;
+    }
+}
+
+SurfaceType classify_surface(const TopoDS_Face& face)
+{
+    BRepAdaptor_Surface adaptor(face, Standard_True);
+
+    switch (adaptor.GetType()) {
+        case GeomAbs_Plane:
+            return SurfaceType::Plane;
+        case GeomAbs_Cylinder:
+            return SurfaceType::Cylinder;
+        default:
+            return SurfaceType::Unknown;
+    }
+}
+
+}  // namespace
+
+FaceTopologyResult GeometryKernel::inspect_face_topology(
+    const std::string& path
+) const {
+    FaceTopologyResult result{};
+
+    if (!std::filesystem::exists(path)) {
+        return result;
+    }
+
+    STEPControl_Reader reader;
+
+    if (reader.ReadFile(path.c_str()) != IFSelect_RetDone) {
+        return result;
+    }
+
+    if (reader.TransferRoots() <= 0) {
+        return result;
+    }
+
+    const TopoDS_Shape shape = reader.OneShape();
+
+    if (shape.IsNull()) {
+        return result;
+    }
+
+    TopTools_IndexedMapOfShape face_map;
+    TopTools_IndexedMapOfShape edge_map;
+
+    TopExp::MapShapes(
+        shape,
+        TopAbs_FACE,
+        face_map
+    );
+
+    TopExp::MapShapes(
+        shape,
+        TopAbs_EDGE,
+        edge_map
+    );
+
+    TopTools_IndexedDataMapOfShapeListOfShape edge_faces;
+
+    TopExp::MapShapesAndAncestors(
+        shape,
+        TopAbs_EDGE,
+        TopAbs_FACE,
+        edge_faces
+    );
+
+    result.faces.reserve(
+        static_cast<std::size_t>(face_map.Extent())
+    );
+
+    for (Standard_Integer i = 1;
+         i <= face_map.Extent();
+         ++i) {
+        const TopoDS_Face face =
+            TopoDS::Face(face_map(i));
+
+        GProp_GProps surface_properties;
+
+        BRepGProp::SurfaceProperties(
+            face,
+            surface_properties
+        );
+
+        const double area =
+            surface_properties.Mass();
+
+        if (area < 1.0e-12) {
+            continue;
+        }
+
+        const gp_Pnt centroid =
+            surface_properties.CentreOfMass();
+
+        FaceTopologyDescriptor descriptor{};
+
+        descriptor.index =
+            static_cast<std::size_t>(i - 1);
+
+        descriptor.surface_type =
+            classify_surface(face);
+
+        descriptor.area = area;
+
+        descriptor.centroid = {
+            centroid.X(),
+            centroid.Y(),
+            centroid.Z()
+        };
+
+        descriptor.orientation =
+            face.Orientation() == TopAbs_REVERSED
+                ? FaceOrientation::Reversed
+                : FaceOrientation::Forward;
+
+        BRepAdaptor_Surface adaptor(
+            face,
+            Standard_True
+        );
+
+        if (adaptor.GetType() == GeomAbs_Plane) {
+            const gp_Pln plane =
+                adaptor.Plane();
+
+            const gp_Dir normal =
+                plane.Axis().Direction();
+
+            descriptor.normal = {
+                normal.X(),
+                normal.Y(),
+                normal.Z()
+            };
+        }
+
+        if (adaptor.GetType() == GeomAbs_Cylinder) {
+            const gp_Cylinder cylinder =
+                adaptor.Cylinder();
+
+            const gp_Ax1 axis =
+                cylinder.Axis();
+
+            const gp_Pnt origin =
+                axis.Location();
+
+            const gp_Dir direction =
+                axis.Direction();
+
+            descriptor.radius =
+                cylinder.Radius();
+
+            descriptor.axis_origin = {
+                origin.X(),
+                origin.Y(),
+                origin.Z()
+            };
+
+            descriptor.axis_direction = {
+                direction.X(),
+                direction.Y(),
+                direction.Z()
+            };
+        }
+
+        for (TopExp_Explorer edge_exp(
+                 face,
+                 TopAbs_EDGE
+             );
+             edge_exp.More();
+             edge_exp.Next()) {
+            const TopoDS_Edge edge =
+                TopoDS::Edge(edge_exp.Current());
+
+            const Standard_Integer edge_index =
+                edge_map.FindIndex(edge);
+
+            if (edge_index > 0) {
+                descriptor.edge_indices.push_back(
+                    static_cast<std::size_t>(
+                        edge_index - 1
+                    )
+                );
+            }
+        }
+
+        result.faces.push_back(
+            std::move(descriptor)
+        );
+    }
+
+    result.edges.reserve(
+        static_cast<std::size_t>(edge_map.Extent())
+    );
+
+    for (Standard_Integer i = 1;
+         i <= edge_map.Extent();
+         ++i) {
+        const TopoDS_Edge edge =
+            TopoDS::Edge(edge_map(i));
+
+        GProp_GProps edge_properties;
+
+        BRepGProp::LinearProperties(
+            edge,
+            edge_properties
+        );
+
+        EdgeTopologyDescriptor descriptor{};
+
+        descriptor.index =
+            static_cast<std::size_t>(i - 1);
+
+        descriptor.curve_type =
+            classify_curve(edge);
+
+        descriptor.length =
+            edge_properties.Mass();
+
+        const Standard_Integer ancestor_index =
+            edge_faces.FindIndex(edge);
+
+        if (ancestor_index > 0) {
+            const auto& ancestors =
+                edge_faces.FindFromIndex(ancestor_index);
+
+            descriptor.adjacent_face_indices.reserve(
+                static_cast<std::size_t>(
+                    ancestors.Extent()
+                )
+            );
+
+            for (auto it = ancestors.cbegin();
+                 it != ancestors.cend();
+                 ++it) {
+                const Standard_Integer face_index =
+                    face_map.FindIndex(*it);
+
+                if (face_index > 0) {
+                    descriptor.adjacent_face_indices.push_back(
+                        static_cast<std::size_t>(
+                            face_index - 1
+                        )
+                    );
+                }
+            }
+        }
+
+        result.edges.push_back(
+            std::move(descriptor)
+        );
+    }
+
+    return result;
 }
 
 }  // namespace cad2sim::kernel

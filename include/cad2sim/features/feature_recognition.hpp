@@ -12,7 +12,8 @@ enum class FeatureType {
     Hole,
     Pocket,
     Fillet,
-    Chamfer
+    Chamfer,
+    Unknown
 };
 
 enum class FeatureStatus {

@@ -79,6 +79,43 @@ enum class SurfaceType {
     Cylinder
 };
 
+enum class CurveType {
+    Unknown,
+    Line,
+    Circle,
+    Other
+};
+
+enum class FaceOrientation {
+    Forward,
+    Reversed
+};
+
+struct EdgeTopologyDescriptor {
+    std::size_t index;
+    CurveType curve_type;
+    double length;
+    std::vector<std::size_t> adjacent_face_indices;
+};
+
+struct FaceTopologyDescriptor {
+    std::size_t index;
+    SurfaceType surface_type;
+    double area;
+    Point3 centroid;
+    FaceOrientation orientation;
+    Vector3 normal;
+    double radius;
+    Point3 axis_origin;
+    Vector3 axis_direction;
+    std::vector<std::size_t> edge_indices;
+};
+
+struct FaceTopologyResult {
+    std::vector<FaceTopologyDescriptor> faces;
+    std::vector<EdgeTopologyDescriptor> edges;
+};
+
 struct FaceDescriptor {
     // Zero-based index within the current face inspection result.
     std::size_t index;
@@ -97,6 +134,10 @@ public:
     ) const;
 
     std::vector<FaceDescriptor> inspect_faces(
+        const std::string& path
+    ) const;
+
+    FaceTopologyResult inspect_face_topology(
         const std::string& path
     ) const;
 };
