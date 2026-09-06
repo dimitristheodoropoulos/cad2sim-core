@@ -661,7 +661,7 @@ No verification result is claimed at this stage.
 | `CAD2SIM-REQ-008` | Feature-Level Geometry                                  |
 | `CAD2SIM-REQ-009` | Coordinate and Reference-System Strategy                |
 | `CAD2SIM-REQ-010` | Kernel Independence                                     |
-| `CAD2SIM-REQ-013` | Serialization and Engineering References                |
+| `CAD2SIM-REQ-014` | Serialization and Engineering References                |
 | `CAD2SIM-REQ-015` | Regression Verification / determinism                   |
 | `CAD2SIM-REQ-016` | Geometry Validation / Robustness                        |
 | `CAD2SIM-REQ-017` | Geometry Model Verification                             |

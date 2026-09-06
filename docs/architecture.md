@@ -629,7 +629,7 @@ This table represents architectural intent only. It does not establish implement
 
 The architecture baseline remains the governing design reference for the project.
 
-The initial geometry-kernel implementation is now in place and verified at the current scope. The implemented boundary includes:
+The initial geometry-kernel, meshing, mesh-quality, engineering-region and simulation-oriented engineering-model implementations are now in place and verified at their current scope. The implemented boundary includes:
 
 * project-defined `GeometryKernel` API
 * project-defined face descriptors and surface classification
@@ -637,11 +637,14 @@ The initial geometry-kernel implementation is now in place and verified at the c
 * feature recognition consuming the project-defined kernel API rather than OpenCASCADE types directly
 * CMake visibility configured so OpenCASCADE dependencies are private to `cad2sim_core`
 * explicit OpenCASCADE dependencies for integration tests that intentionally use kernel-native geometry
+* project-defined engineering model structures for regions, material assignments, analysis entities, boundary-condition-ready references and preprocessing metadata
+* engineering model validation independent of vendor-specific CAD-kernel types
+* deterministic versioned engineering-model serialization and validated deserialization
 
-Verification of the current implementation includes a clean configure/build and full CTest execution with 10/10 tests passing and 0 failures.
+Verification of the current implementation includes a clean configure/build and full CTest execution with 16/16 tests passing and 0 failures.
 
 The current implementation does not include an alternative commercial-kernel adapter, and no ACIS or Parasolid support is claimed.
 
-Meshing, richer feature recognition, engineering-model generation, and other future architecture components remain implementation work for later phases.
+Volume meshing, richer engineering semantics, complete material/physics modeling, solver integration and other future architecture components remain implementation work for later phases.
 
 Architecture components shall only be considered implemented at the specific scope for which corresponding source code and verification evidence exist.

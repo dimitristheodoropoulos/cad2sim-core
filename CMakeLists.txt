@@ -31,6 +31,8 @@ add_library(cad2sim_core
     src/mesh/surface_mesher.cpp
     src/mesh/mesh_quality.cpp
     src/engineering/region_identification.cpp
+    src/engineering/engineering_model.cpp
+    src/engineering/engineering_model_serializer.cpp
 )
 
 target_include_directories(cad2sim_core
@@ -324,6 +326,34 @@ target_compile_definitions(cad2sim_mesh_quality_integration
 add_test(
     NAME cad2sim_mesh_quality_integration
     COMMAND cad2sim_mesh_quality_integration
+)
+
+add_executable(cad2sim_engineering_model_serializer_unit
+    tests/unit/engineering/test_engineering_model_serializer.cpp
+)
+
+target_link_libraries(cad2sim_engineering_model_serializer_unit
+    PRIVATE
+        cad2sim_core
+)
+
+add_test(
+    NAME cad2sim_engineering_model_serializer_unit
+    COMMAND cad2sim_engineering_model_serializer_unit
+)
+
+add_executable(cad2sim_engineering_model_unit
+    tests/unit/engineering/test_engineering_model.cpp
+)
+
+target_link_libraries(cad2sim_engineering_model_unit
+    PRIVATE
+        cad2sim_core
+)
+
+add_test(
+    NAME cad2sim_engineering_model_unit
+    COMMAND cad2sim_engineering_model_unit
 )
 
 add_executable(cad2sim_region_identification_integration
