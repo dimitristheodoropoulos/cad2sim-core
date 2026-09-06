@@ -3,8 +3,15 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include "cad2sim/kernel/validated_shape.hpp"
 
 namespace cad2sim::kernel {
+
+struct ValidatedShapeResult {
+    bool success;
+    ValidatedShape shape;
+    std::string diagnostic;
+};
 
 struct ImportResult {
     bool success;
@@ -127,6 +134,9 @@ struct FaceDescriptor {
 class GeometryKernel {
 public:
     ImportResult import_step(const std::string& path) const;
+    ValidatedShapeResult load_validated_shape(
+        const std::string& path
+    ) const;
     TopologyCounts inspect_topology(const std::string& path) const;
     ValidationResult validate_step(const std::string& path) const;
     GeometryProperties inspect_geometry_properties(

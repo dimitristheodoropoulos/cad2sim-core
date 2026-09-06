@@ -705,7 +705,7 @@ No verification result is claimed at this stage.
 | Requirement       | Meshing-model evidence                             |
 | ----------------- | -------------------------------------------------- |
 | `CAD2SIM-REQ-004` | Meshing Pipeline                                   |
-| `CAD2SIM-REQ-011` | Mesh Data Model                                    |
+| `CAD2SIM-REQ-011` | Surface Mesh Preparation / Generation             |
 | `CAD2SIM-REQ-012` | CAD-to-Mesh Association                            |
 | `CAD2SIM-REQ-013` | Engineering-Model Preparation / Mesh Serialization |
 | `CAD2SIM-REQ-014` | Mesh Quality Metrics                               |

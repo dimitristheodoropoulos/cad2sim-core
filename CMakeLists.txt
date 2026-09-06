@@ -25,6 +25,10 @@ add_library(cad2sim_core
     src/transform3.cpp
     src/kernel/geometry_kernel.cpp
     src/features/feature_recognition.cpp
+    src/kernel/validated_shape.cpp
+    src/kernel/detail/validated_shape_data.cpp
+    src/kernel/detail/step_shape_loader.cpp
+    src/mesh/surface_mesher.cpp
 )
 
 target_include_directories(cad2sim_core
@@ -52,6 +56,7 @@ target_link_libraries(cad2sim_core
         TKSTEPAttr
         TKSTEP209
         TKSTEP
+        TKMesh
 )
 
 add_executable(cad2sim_core_unit
@@ -264,4 +269,24 @@ target_compile_definitions(cad2sim_feature_recognition_integration
 add_test(
     NAME cad2sim_feature_recognition_integration
     COMMAND cad2sim_feature_recognition_integration
+)
+
+
+add_executable(cad2sim_surface_mesh_integration
+    tests/integration/mesh/test_surface_mesh.cpp
+)
+
+target_link_libraries(cad2sim_surface_mesh_integration
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_surface_mesh_integration
+    PRIVATE
+        CAD2SIM_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+add_test(
+    NAME cad2sim_surface_mesh_integration
+    COMMAND cad2sim_surface_mesh_integration
 )

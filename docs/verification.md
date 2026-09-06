@@ -415,20 +415,42 @@ Recognition shall consider relevant combinations of:
 
 ## 16. Surface Meshing Verification
 
-Surface meshing shall be verified using controlled reference geometries.
+Surface meshing is currently implemented for triangular surface meshes
+generated from validated STEP geometry using the OCCT
+`BRepMesh_IncrementalMesh` meshing technology.
 
-Initial checks shall include:
+### 16.1 Implemented Verification
 
-* mesh generation succeeds for valid input
-* node coordinates are finite
-* surface element connectivity is valid
-* surface element count is non-zero where expected
-* surface elements reference existing nodes
-* surface element areas are valid
-* degenerate elements are detected
-* CAD-face associations are preserved where supported
+The current REQ-011 verification covers:
 
-Analytical surfaces shall provide useful reference cases for checking discretization behavior.
+* successful surface mesh generation from representative validated STEP geometry
+* non-empty face, node, and triangle data
+* finite mesh-node coordinates
+* valid triangle node indices
+* deterministic repeated mesh generation with identical structure,
+  coordinates, and connectivity
+* deterministic failure handling for invalid linear/angular mesh parameters
+* failure handling for an invalid `ValidatedShape`
+* failure handling for a missing STEP input
+* full CTest regression: 11/11 passed, 0 failed
+
+The verified implementation scope is surface meshing only.
+
+### 16.2 Future Verification
+
+The following checks remain planned for subsequent meshing verification work:
+
+* surface-element area validation
+* explicit degenerate-element detection
+* stronger CAD-face association verification
+* volume mesh generation and validation
+* mesh quality evaluation
+
+These planned checks shall not be interpreted as currently implemented
+or verified capabilities.
+
+Analytical surfaces shall provide useful reference cases for checking
+future discretization behavior.
 
 ---
 
@@ -1186,7 +1208,7 @@ All requirements are initially `PENDING`. Status updates will be made as impleme
 | **CAD2SIM-REQ-008** | Integration + Negative | `tests/integration/features/test_feature_recognition.cpp`, `tests/fixtures/step/` | Controlled STEP fixtures verify planar-face and cylindrical-face classification plus hole, pocket, fillet, and chamfer recognition; negative controls verify external-boss rejection, sharp/plain-edge rejection, hole-versus-pocket differentiation, and explicit `Unknown/Unsupported` reporting for an unsupported spherical surface; focused feature-recognition test passed; full CTest 10/10 passed, 0 failed; ambiguous-case classification remains unverified | PENDING |
 | **CAD2SIM-REQ-009** | Unit | `tests/unit/math/test_transform3.cpp`, `tests/unit/geometry/test_advanced_primitives.cpp` | Deterministic tests cover identity, translation, Z-axis rotation, composition, rotation norm preservation, inverse composition, rigid-transform round-trips, and Frame3 local/world coordinate conversion; scaling is not implemented; full CTest 10/10 passed, 0 failed | VERIFIED |
 | **CAD2SIM-REQ-010** | Architecture Review + Integration | `tests/integration/kernel`, `tests/integration/features/test_feature_recognition.cpp` | Project-defined `GeometryKernel` boundary; no OCCT references in public CAD2Sim headers or feature-recognition sources; OCCT dependencies private to `cad2sim_core`; full CTest 10/10 passed, 0 failed; no alternative commercial-kernel adapter claimed | VERIFIED |
-| **CAD2SIM-REQ-011** | Integration | `tests/integration/meshing` | Surface/volume mesh generation on representative geometries, failure handling | PENDING |
+| **CAD2SIM-REQ-011** | Integration | `tests/integration/mesh/test_surface_mesh.cpp` | Validated STEP geometry produces triangular surface mesh data through OCCT `BRepMesh_IncrementalMesh`; deterministic repeated generation; invalid-parameter, invalid-shape and missing-STEP failure handling; mesh-node and triangle-index validation; full CTest 11/11 passed, 0 failed; verified scope is surface meshing only | VERIFIED |
 | **CAD2SIM-REQ-012** | Unit + Integration | `tests/unit/mesh`, `tests/integration/meshing` | Element count, aspect ratio, angles, skewness, Jacobian metrics on known-good/degraded meshes | PENDING |
 | **CAD2SIM-REQ-013** | Integration | `tests/integration/engineering` | Region identification, stable references to originating geometry | PENDING |
 | **CAD2SIM-REQ-014** | Integration | `tests/integration/engineering` | Schema validation, deterministic serialization, round-trip tests | PENDING |

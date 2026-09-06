@@ -1,6 +1,14 @@
 #include "cad2sim/kernel/geometry_kernel.hpp"
 
+
 #include <filesystem>
+#include <memory>
+#include <utility>
+
+#include "geometry_validation.hpp"
+#include "detail/step_shape_loader.hpp"
+#include "detail/validated_shape_data.hpp"
+
 
 #include <Bnd_Box.hxx>
 #include <BRepAdaptor_Curve.hxx>
@@ -33,54 +41,25 @@
 namespace cad2sim::kernel {
 
 ImportResult GeometryKernel::import_step(const std::string& path) const {
-    if (!std::filesystem::exists(path)) {
+    const auto loaded =
+        detail::load_step_shape(path);
+
+    if (!loaded.success) {
         return {
             false,
             false,
-            "STEP file does not exist: " + path
+            loaded.diagnostic
         };
     }
 
-    STEPControl_Reader reader;
+    const auto validation =
+        detail::validate_shape(loaded.shape);
 
-    const IFSelect_ReturnStatus status = reader.ReadFile(path.c_str());
-
-    if (status != IFSelect_RetDone) {
+    if (!validation.valid) {
         return {
             false,
             false,
-            "Failed to read STEP file: " + path
-        };
-    }
-
-    const Standard_Integer transferred = reader.TransferRoots();
-
-    if (transferred <= 0) {
-        return {
-            false,
-            false,
-            "STEP file contains no transferable roots: " + path
-        };
-    }
-
-    const TopoDS_Shape shape = reader.OneShape();
-
-    if (shape.IsNull()) {
-        return {
-            false,
-            false,
-            "STEP import produced a null shape: " + path
-        };
-    }
-
-    const BRepCheck_Analyzer analyzer(shape);
-    const bool valid = analyzer.IsValid();
-
-    if (!valid) {
-        return {
-            false,
-            false,
-            "Imported STEP shape is geometrically invalid: " + path
+            validation.diagnostic
         };
     }
 
@@ -90,6 +69,44 @@ ImportResult GeometryKernel::import_step(const std::string& path) const {
         {}
     };
 }
+
+ValidatedShapeResult GeometryKernel::load_validated_shape(
+    const std::string& path
+) const {
+    const auto loaded =
+        detail::load_step_shape(path);
+
+    if (!loaded.success) {
+        return {
+            false,
+            {},
+            loaded.diagnostic
+        };
+    }
+
+    const auto validation =
+        detail::validate_shape(loaded.shape);
+
+    if (!validation.valid) {
+        return {
+            false,
+            {},
+            validation.diagnostic
+        };
+    }
+
+    auto data =
+        std::make_shared<const detail::ValidatedShapeData>(
+            loaded.shape
+        );
+
+    return {
+        true,
+        ValidatedShape(std::move(data)),
+        {}
+    };
+}
+
 
 TopologyCounts GeometryKernel::inspect_topology(
     const std::string& path
@@ -163,7 +180,6 @@ TopologyCounts GeometryKernel::inspect_topology(
 
 }  // namespace cad2sim::kernel
 
-#include "geometry_validation.hpp"
 
 namespace cad2sim::kernel::detail {
 
