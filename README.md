@@ -111,6 +111,53 @@ cad2sim-core/
 └── tools/
 ```
 
+## Build and Verification
+
+### Dependencies
+
+The core build requires:
+
+* CMake 3.20 or newer
+* a C++17-compatible compiler
+* OpenCASCADE Technology (OCCT)
+
+OpenCASCADE is discovered by CMake using:
+
+```cmake
+find_package(OpenCASCADE REQUIRED)
+```
+
+### Configure and Build
+
+From the repository root:
+
+```bash
+cmake -S . -B build
+cmake --build build --parallel
+```
+
+### Run the Test Suite
+
+The complete CTest suite can be executed with:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+The current verification baseline contains 18 registered CTest tests and is expected to report:
+
+```text
+100% tests passed, 0 tests failed out of 18
+```
+
+For a clean verification, use a separate build directory:
+
+```bash
+cmake -S . -B build-clean
+cmake --build build-clean --parallel
+ctest --test-dir build-clean --output-on-failure
+```
+
 ## Requirements Traceability
 
 The project requirements are maintained in:
