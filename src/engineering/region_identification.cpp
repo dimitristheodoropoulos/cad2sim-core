@@ -23,7 +23,7 @@ RegionIdentificationResult RegionIdentifier::identify(
     }
 
     const TopoDS_Shape& occt_shape =
-        shape.data_->shape();
+        shape.shape();
 
     std::vector<EngineeringRegion> regions;
 

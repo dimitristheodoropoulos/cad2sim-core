@@ -2,6 +2,8 @@
 
 #include <memory>
 
+class TopoDS_Shape;
+
 namespace cad2sim::mesh {
 class SurfaceMesher;
 }
@@ -24,6 +26,8 @@ public:
 
     bool valid() const noexcept;
 
+    const TopoDS_Shape& shape() const noexcept;
+
 private:
     explicit ValidatedShape(
         std::shared_ptr<const detail::ValidatedShapeData> data
@@ -31,8 +35,6 @@ private:
 
     std::shared_ptr<const detail::ValidatedShapeData> data_;
 
-    friend class cad2sim::mesh::SurfaceMesher;
-    friend class cad2sim::engineering::RegionIdentifier;
     friend class GeometryKernel;
 };
 

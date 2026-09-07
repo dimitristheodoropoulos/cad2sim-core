@@ -15,4 +15,8 @@ bool ValidatedShape::valid() const noexcept {
     return static_cast<bool>(data_);
 }
 
+const TopoDS_Shape& ValidatedShape::shape() const noexcept {
+    return data_->shape();
+}
+
 }  // namespace cad2sim::kernel

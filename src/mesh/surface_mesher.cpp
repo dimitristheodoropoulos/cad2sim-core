@@ -52,7 +52,7 @@ SurfaceMeshResult SurfaceMesher::mesh(
     }
 
     const TopoDS_Shape& occt_shape =
-        shape.data_->shape();
+        shape.shape();
 
     BRepMesh_IncrementalMesh mesher(
         occt_shape,
