@@ -19,10 +19,18 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library(cad2sim_core
-    src/core.cpp
+add_library(cad2sim_math
     src/vec3.cpp
     src/transform3.cpp
+)
+
+target_include_directories(cad2sim_math
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+add_library(cad2sim_core
+    src/core.cpp
     src/kernel/geometry_kernel.cpp
     src/features/feature_recognition.cpp
     src/kernel/validated_shape.cpp
@@ -43,6 +51,8 @@ target_include_directories(cad2sim_core
 )
 
 target_link_libraries(cad2sim_core
+    PUBLIC
+        cad2sim_math
     PRIVATE
         TKernel
         TKMath
@@ -85,7 +95,7 @@ add_executable(cad2sim_vec3_unit
 
 target_link_libraries(cad2sim_vec3_unit
     PRIVATE
-        cad2sim_core
+        cad2sim_math
 )
 
 add_test(
@@ -99,7 +109,7 @@ add_executable(cad2sim_transform3_unit
 
 target_link_libraries(cad2sim_transform3_unit
     PRIVATE
-        cad2sim_core
+        cad2sim_math
 )
 
 add_test(
@@ -113,7 +123,7 @@ add_executable(cad2sim_primitives_unit
 
 target_link_libraries(cad2sim_primitives_unit
     PRIVATE
-        cad2sim_core
+        cad2sim_math
 )
 
 add_test(
@@ -127,7 +137,7 @@ add_executable(cad2sim_advanced_primitives_unit
 
 target_link_libraries(cad2sim_advanced_primitives_unit
     PRIVATE
-        cad2sim_core
+        cad2sim_math
 )
 
 add_test(

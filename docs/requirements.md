@@ -546,7 +546,7 @@ No source file, test, or verification result shall be listed until it actually e
 | Requirement | Design component | Source file | Test | Verification evidence | Status |
 |---|---|---|---|---|---|
 | `CAD2SIM-NFR-001` | `ValidatedShape`, `RegionIdentifier`, `SurfaceMesher` | `include/cad2sim/kernel/validated_shape.hpp`, `src/kernel/validated_shape.cpp`, `src/engineering/region_identification.cpp`, `src/mesh/surface_mesher.cpp` | `cad2sim_region_identification_integration`, `cad2sim_surface_mesh_integration`, `cad2sim_determinism_regression`, full CTest | `ValidatedShape` exposes a controlled read-only geometry accessor; `RegionIdentifier` and `SurfaceMesher` no longer access `ValidatedShape` private storage or require friend access; private-access audit is clean; focused integration and determinism tests passed; final CMake build passed; full CTest: 18/18 passed, 0 failed | `VERIFIED` |
-| `CAD2SIM-NFR-002` | TBD | TBD | TBD | TBD | `PENDING` |
+| `CAD2SIM-NFR-002` | `cad2sim_math`, math/geometry unit-test boundary | `src/vec3.cpp`, `src/transform3.cpp`, `CMakeLists.txt`, `tests/unit/math/`, `tests/unit/geometry/` | `cad2sim_vec3_unit`, `cad2sim_transform3_unit`, `cad2sim_primitives_unit`, `cad2sim_advanced_primitives_unit` | Kernel-independent math and geometry components are separately buildable through `cad2sim_math`; the four focused unit-test executables have no OCCT runtime dependency; focused tests passed; full CTest: 18/18 passed, 0 failed | `VERIFIED` |
 | `CAD2SIM-NFR-003` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-NFR-004` | TBD | TBD | TBD | TBD | `PENDING` |
 | `CAD2SIM-NFR-005` | TBD | TBD | TBD | TBD | `PENDING` |
