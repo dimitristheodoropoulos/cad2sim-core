@@ -763,6 +763,101 @@ Performance results shall not be generalized beyond the tested environment witho
 
 ---
 
+
+## 29.1 REQ-019 Benchmark Methodology and Baseline
+
+The REQ-019 preprocessing benchmark is implemented as a standalone executable:
+
+`cad2sim_preprocessing_benchmark`
+
+The benchmark does not alter the functional CTest suite. It operates on a controlled
+representative STEP corpus:
+
+* `tests/fixtures/step/screw.step`
+* `tests/fixtures/step/hole-001.step`
+* `tests/fixtures/step/pocket-001.step`
+* `tests/fixtures/step/fillet-001.step`
+* `tests/fixtures/step/chamfer-001.step`
+
+Each case executes the following preprocessing pipeline:
+
+`load_validated_shape()` → `SurfaceMesher::mesh()` → `MeshQualityEvaluator::evaluate()`
+→ `RegionIdentifier::identify()` → engineering-model construction →
+`EngineeringModelValidator::validate()` → `EngineeringModelSerializer::serialize()`.
+
+The measured timing boundaries are:
+
+* `step_import_validation`
+* `surface_meshing`
+* `mesh_quality`
+* `region_identification`
+* `engineering_model_validation`
+* `serialization`
+* `total_preprocessing`
+
+Timing uses `std::chrono::steady_clock`. Each case performs one warm-up run followed
+by five measured runs. The warm-up is excluded from the reported statistics.
+For each timing stage, minimum, median, mean and maximum are reported. The median
+is the primary representative value for baseline comparison.
+
+Fixed surface-meshing parameters are:
+
+* linear deflection: `0.1`
+* angular deflection: `0.5`
+
+Structural metrics include topology counts (solids, shells, faces, wires, edges and
+vertices), surface-mesh faces/nodes/triangles, mesh-quality element count,
+engineering-region count and serialized engineering-model size.
+
+Peak memory is measured at benchmark-process scope using Linux
+`getrusage(RUSAGE_SELF).ru_maxrss`. This is a process-level high-water mark and is
+not interpreted as a per-case peak measurement.
+
+The benchmark emits both a human-readable report and a machine-readable JSON report.
+The JSON report records benchmark metadata, configuration, case status, structural
+metrics, timing statistics and memory measurement information.
+
+### REQ-019 Baseline Execution
+
+The initial successful REQ-019 baseline was executed on:
+
+* Git commit: `c30e89ac304905de916cd844eec479a7714c0a9f`
+* Hardware: Intel(R) Core(TM) i7-3520M CPU @ 2.90GHz
+* Operating system: Linux 7.0.0-31-generic x86_64
+* Compiler: GCC 13.3.0
+* Build type: unspecified (`CMAKE_BUILD_TYPE` empty)
+* OpenCASCADE: `7.6`
+* Warm-up runs: `1`
+* Measured runs: `5`
+* Linear deflection: `0.1`
+* Angular deflection: `0.5`
+* Process-level peak RSS: `28,592 KiB`
+
+All five representative cases completed successfully.
+
+| Case | Total preprocessing median |
+|---|---:|
+| `screw` | 47.292 ms |
+| `hole-001` | 14.995 ms |
+| `pocket-001` | 14.681 ms |
+| `fillet-001` | 13.213 ms |
+| `chamfer-001` | 12.386 ms |
+
+The benchmark process exited with status `0`, produced a JSON report, and reported
+`RESULT: PASS`.
+
+The generated JSON was independently parsed and checked for the required metadata,
+configuration, five benchmark cases, seven timing stages with min/median/mean/max
+statistics, structural metrics, memory metadata and overall PASS result. The JSON
+schema audit passed.
+
+The baseline establishes measured reference data for the tested environment. No
+arbitrary performance-regression threshold is claimed by this verification result.
+Future performance comparisons shall identify the benchmark configuration and
+software baseline used for the comparison.
+
+---
+
 ## 30. Performance Regression
 
 Performance regression testing shall compare benchmark results against established project baselines.
@@ -1165,9 +1260,9 @@ A milestone shall not be considered fully verified when critical applicable chec
 
 ## 47. Current Status
 
-Verification strategy baseline defined.
+Verification strategy and current evidence baseline.
 
-The document establishes the intended verification methodology for:
+The document establishes the verification methodology for:
 
 * 3D mathematics
 * computational geometry
@@ -1182,19 +1277,15 @@ The document establishes the intended verification methodology for:
 * performance
 * requirements traceability
 
-Implementation has not yet started.
-
-No test, pass, performance, determinism, or verification result is claimed at this stage.
-
-Future verification status shall be based exclusively on reproducible repository evidence.
+Current verification status is based exclusively on reproducible repository evidence. The current CTest baseline contains 18 registered tests, with 18/18 passing and 0 failures.
 
 ---
 
 ## 48. Verification Matrix
 
-This section provides a complete mapping from each requirement defined in `docs/requirements.md` to its planned verification method, test location, expected evidence, and current status.
+This section provides a complete mapping from each requirement defined in `docs/requirements.md` to its verification method, test location, verification evidence, and current status.
 
-All requirements are initially `PENDING`. Status updates will be made as implementation and verification evidence become available.
+Requirement status is maintained from reproducible repository evidence and is updated as implementation and verification evidence become available.
 
 | Requirement ID | Verification Method | Planned Test Area | Expected Evidence | Current Status |
 |----------------|----------------------|-------------------|-------------------|----------------|
@@ -1214,10 +1305,10 @@ All requirements are initially `PENDING`. Status updates will be made as impleme
 | **CAD2SIM-REQ-014** | Unit | `tests/unit/engineering/test_engineering_model.cpp`, `tests/unit/engineering/test_engineering_model_serializer.cpp` | Engineering model schema validation covers region layout and references for materials, analysis entities and boundary-condition-ready references, plus metadata key validation; serializer emits a versioned project-defined representation with deterministic section ordering; deserializer rejects malformed records, missing required sections/records, unsupported versions, invalid references and trailing data; serialize/deserialize/serialize round-trip preserves the serialized representation exactly; focused unit tests passed; full CTest: 16/16 passed, 0 failed | VERIFIED |
 | **CAD2SIM-REQ-015** | Regression | `tests/regression/determinism/test_preprocessing_determinism.cpp`, `tests/fixtures/step/screw.step` | Two executions with identical STEP input and explicit meshing parameters are compared across validation, surface mesh structure/data, mesh quality, engineering regions, engineering-model validation, and serialized engineering-model output; focused determinism regression passed; full CTest: 17/17 passed, 0 failed | VERIFIED |
 | **CAD2SIM-REQ-016** | Negative Integration | `tests/integration/negative/test_error_handling.cpp` | Negative coverage verifies missing STEP input, malformed STEP input, invalid B-Rep geometry, invalid linear/angular meshing parameters, invalid validated-shape input, and invalid engineering-model references; stable project-defined diagnostics are asserted explicitly, while malformed STEP requires failure with a non-empty diagnostic; focused REQ-016 test passed; full CTest: 18/18 passed, 0 failed | VERIFIED |
-| **CAD2SIM-REQ-017** | CI + Regression | Entire test suite | Automated test execution, reproducible results, documented test logs | PENDING |
-| **CAD2SIM-REQ-018** | Regression | `tests/regression` | Suite of primitives, topology variations, features, invalid cases, meshing, metadata | PENDING |
-| **CAD2SIM-REQ-019** | Benchmark | `benchmarks/` | Timings, memory usage on representative models; documented methodology | PENDING |
-| **CAD2SIM-REQ-020** | Documentation Review | N/A (docs) | All docs present: requirements, architecture, geometry, meshing, verification, limitations; traceability table | PENDING |
+| **CAD2SIM-REQ-017** | Automated Test + Regression | `CMakeLists.txt`, `tests/` | The registered CTest suite provides automated coverage across core geometry, topology, preprocessing, mesh quality, negative/error handling, and deterministic regression; current full CTest execution: 18/18 passed, 0 failed; results are reproducible from the repository build tree and documented in the verification matrix | VERIFIED |
+| **CAD2SIM-REQ-018** | Regression | `tests/regression/determinism/test_preprocessing_determinism.cpp`, `tests/integration/`, `tests/fixtures/step/`, `CMakeLists.txt` | Representative regression coverage spans primitives, topology variations, recognized features, invalid/problematic geometry, meshing, and engineering metadata/model generation; dedicated deterministic preprocessing regression exercises validation, meshing, mesh quality, engineering regions, model validation, and serialization twice and compares outputs; current full CTest baseline: 18/18 passed, 0 failed | VERIFIED |
+| **CAD2SIM-REQ-019** | Benchmark | `benchmarks/preprocessing/benchmark_preprocessing.cpp`, `CMakeLists.txt`, `tests/fixtures/step/` | REQ-019 benchmark executed successfully on five representative STEP fixtures (`screw`, `hole-001`, `pocket-001`, `fillet-001`, `chamfer-001`) with 1 warm-up run and 5 measured runs per case; all five cases PASS; seven required timing stages report min/median/mean/max; topology, mesh, quality and engineering metrics are recorded; process-level peak RSS is reported as 28,592 KiB using Linux `getrusage(RUSAGE_SELF).ru_maxrss`; human-readable and machine-readable JSON reports were generated; JSON schema audit passed; benchmark baseline identified by Git commit `c30e89ac304905de916cd844eec479a7714c0a9f` | VERIFIED |
+| **CAD2SIM-REQ-020** | Documentation Review | N/A (docs) | Documentation review confirmed the required documentation set is present (`requirements.md`, `architecture.md`, `geometry_model.md`, `meshing.md`, `verification.md`); requirements-to-evidence traceability is documented; implemented capabilities are explicitly distinguished from planned/future capabilities; known limitations and project boundaries are documented; README documentation structure is consistent with the repository; focused REQ-020 documentation audit passed | VERIFIED |
 | **CAD2SIM-NFR-001** | Code Review + Architecture | `include/cad2sim/kernel/validated_shape.hpp`, `src/kernel/validated_shape.cpp`, `src/engineering/region_identification.cpp`, `src/mesh/surface_mesher.cpp` | Verified controlled `ValidatedShape` geometry boundary via `shape() const noexcept`; removed direct `ValidatedShape::data_` access from `RegionIdentifier` and `SurfaceMesher`; removed obsolete `friend` declarations; private-access audit is clean; `cad2sim_region_identification_integration`, `cad2sim_surface_mesh_integration`, and `cad2sim_determinism_regression` passed; final CMake build passed; full CTest: 18/18 passed, 0 failed | VERIFIED |
 | **CAD2SIM-NFR-002** | Test Design + Build Verification | `CMakeLists.txt`, `src/vec3.cpp`, `src/transform3.cpp`, `tests/unit/math/`, `tests/unit/geometry/` | `cad2sim_math` isolates the kernel-independent `Vec3` and `Transform3` implementation; `cad2sim_vec3_unit`, `cad2sim_transform3_unit`, `cad2sim_primitives_unit`, and `cad2sim_advanced_primitives_unit` link directly to `cad2sim_math`; all four executables have no OCCT runtime dependency; focused tests passed; full CTest: 18/18 passed, 0 failed | VERIFIED |
 | **CAD2SIM-NFR-003** | Build Verification + Code Review | `CMakeLists.txt`, core source tree | Core CMake configuration contains no identified OS-specific conditionals, platform-specific compiler/linker flags, or OS-specific source dependencies; `cad2sim_core` builds successfully; full CTest: 18/18 passed, 0 failed. No cross-platform CI is currently claimed. The Linux-specific `/usr/include/opencascade` include path is confined to the uncommitted REQ-019 benchmark target and is not part of the committed core build boundary | VERIFIED |

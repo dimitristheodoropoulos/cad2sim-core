@@ -445,3 +445,24 @@ add_test(
     NAME cad2sim_determinism_regression
     COMMAND cad2sim_determinism_regression
 )
+
+# REQ-019: preprocessing benchmark
+add_executable(cad2sim_preprocessing_benchmark
+    benchmarks/preprocessing/benchmark_preprocessing.cpp
+)
+
+target_link_libraries(cad2sim_preprocessing_benchmark
+    PRIVATE
+        cad2sim_core
+)
+
+target_compile_definitions(cad2sim_preprocessing_benchmark
+    PRIVATE
+        CAD2SIM_BENCHMARK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        CAD2SIM_BENCHMARK_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+)
+
+target_include_directories(cad2sim_preprocessing_benchmark
+    PRIVATE
+        /usr/include/opencascade
+)

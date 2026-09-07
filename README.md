@@ -183,6 +183,6 @@ Detailed verification criteria will be maintained in `docs/verification.md`.
 
 ## Status
 
-Initial repository and requirements baseline.
+The current repository baseline includes implemented and verified core geometry, topology, preprocessing, mesh-quality, engineering-model, deterministic-regression, and robust-error-handling functionality.
 
-Implementation has not yet started.
+The current CTest baseline contains 18 registered tests, with 18/18 passing and 0 failures.

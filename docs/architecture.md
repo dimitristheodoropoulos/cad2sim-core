@@ -641,7 +641,7 @@ The initial geometry-kernel, meshing, mesh-quality, engineering-region and simul
 * engineering model validation independent of vendor-specific CAD-kernel types
 * deterministic versioned engineering-model serialization and validated deserialization
 
-Verification of the current implementation includes a clean configure/build and full CTest execution with 16/16 tests passing and 0 failures.
+Verification of the current implementation includes a clean configure/build and full CTest execution with 18/18 tests passing and 0 failures.
 
 The current implementation does not include an alternative commercial-kernel adapter, and no ACIS or Parasolid support is claimed.
 
